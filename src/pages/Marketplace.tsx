@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import SupplierMap from "@/components/SupplierMap";
 import { 
   Search, 
   Filter, 
@@ -16,7 +17,8 @@ import {
   Truck,
   CheckCircle,
   BarChart3,
-  Grid3X3
+  Grid3X3,
+  Map
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
@@ -26,7 +28,7 @@ const Marketplace = () => {
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [sortBy, setSortBy] = useState("relevance");
 
-  // Mock data for marketplace items
+  // Mock data for marketplace items with coordinates
   const marketplaceItems = [
     {
       id: 1,
@@ -38,6 +40,7 @@ const Marketplace = () => {
       reviews: 324,
       category: "grains",
       location: "Punjab, India",
+      coordinates: [75.3412, 31.1471] as [number, number], // Punjab
       availability: "In Stock",
       minOrder: 10,
       image: "🌾",
@@ -53,6 +56,7 @@ const Marketplace = () => {
       reviews: 156,
       category: "spices",
       location: "Kerala, India",
+      coordinates: [76.2711, 10.8505] as [number, number], // Kerala
       availability: "In Stock",
       minOrder: 5,
       image: "🟡",
@@ -68,6 +72,7 @@ const Marketplace = () => {
       reviews: 89,
       category: "vegetables",
       location: "Maharashtra, India",
+      coordinates: [75.7139, 19.7515] as [number, number], // Maharashtra
       availability: "Limited Stock",
       minOrder: 20,
       image: "🧅",
@@ -83,6 +88,7 @@ const Marketplace = () => {
       reviews: 267,
       category: "oils",
       location: "Gujarat, India",
+      coordinates: [71.1924, 22.2587] as [number, number], // Gujarat
       availability: "In Stock",
       minOrder: 15,
       image: "🛢️",
@@ -98,6 +104,7 @@ const Marketplace = () => {
       reviews: 423,
       category: "spices",
       location: "Rajasthan, India",
+      coordinates: [74.2179, 27.0238] as [number, number], // Rajasthan
       availability: "In Stock",
       minOrder: 5,
       image: "🌶️",
@@ -113,6 +120,7 @@ const Marketplace = () => {
       reviews: 156,
       category: "vegetables",
       location: "Karnataka, India",
+      coordinates: [75.7139, 15.3173] as [number, number], // Karnataka
       availability: "In Stock",
       minOrder: 25,
       image: "🍅",
@@ -129,6 +137,7 @@ const Marketplace = () => {
       reviews: 189,
       category: "grains",
       location: "Haryana, India",
+      coordinates: [76.0856, 29.0588] as [number, number], // Haryana
       availability: "In Stock",
       minOrder: 15,
       image: "🌾",
@@ -144,6 +153,7 @@ const Marketplace = () => {
       reviews: 445,
       category: "grains",
       location: "Uttar Pradesh, India",
+      coordinates: [80.9462, 26.8467] as [number, number], // Uttar Pradesh
       availability: "In Stock",
       minOrder: 8,
       image: "🌾",
@@ -159,6 +169,7 @@ const Marketplace = () => {
       reviews: 234,
       category: "spices",
       location: "Tamil Nadu, India",
+      coordinates: [78.6569, 11.1271] as [number, number], // Tamil Nadu
       availability: "In Stock",
       minOrder: 3,
       image: "🟡",
@@ -174,6 +185,7 @@ const Marketplace = () => {
       reviews: 167,
       category: "vegetables",
       location: "Rajasthan, India",
+      coordinates: [73.0243, 26.2389] as [number, number], // Rajasthan (Jodhpur)
       availability: "In Stock",
       minOrder: 30,
       image: "🧅",
@@ -189,6 +201,7 @@ const Marketplace = () => {
       reviews: 189,
       category: "oils",
       location: "Andhra Pradesh, India",
+      coordinates: [79.7400, 15.9129] as [number, number], // Andhra Pradesh
       availability: "In Stock",
       minOrder: 20,
       image: "🛢️",
@@ -298,9 +311,9 @@ const Marketplace = () => {
           </p>
         </div>
 
-        {/* Tabs for Grid and Comparison Views */}
+        {/* Tabs for Grid, Comparison, and Map Views */}
         <Tabs defaultValue="grid" className="space-y-6">
-          <TabsList className="grid w-full max-w-md grid-cols-2">
+          <TabsList className="grid w-full max-w-lg grid-cols-3">
             <TabsTrigger value="grid" className="flex items-center space-x-2">
               <Grid3X3 className="w-4 h-4" />
               <span>Grid View</span>
@@ -308,6 +321,10 @@ const Marketplace = () => {
             <TabsTrigger value="comparison" className="flex items-center space-x-2">
               <BarChart3 className="w-4 h-4" />
               <span>Price Comparison</span>
+            </TabsTrigger>
+            <TabsTrigger value="map" className="flex items-center space-x-2">
+              <Map className="w-4 h-4" />
+              <span>Map View</span>
             </TabsTrigger>
           </TabsList>
 
@@ -479,6 +496,11 @@ const Marketplace = () => {
                 </Card>
               ))}
             </div>
+          </TabsContent>
+
+          {/* Map View */}
+          <TabsContent value="map">
+            <SupplierMap suppliers={filteredItems} onOrder={handleOrder} />
           </TabsContent>
         </Tabs>
 
