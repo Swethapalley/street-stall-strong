@@ -4,6 +4,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { 
   Search, 
   Filter, 
@@ -12,7 +14,9 @@ import {
   ShoppingCart,
   Package,
   Truck,
-  CheckCircle
+  CheckCircle,
+  BarChart3,
+  Grid3X3
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
@@ -113,6 +117,82 @@ const Marketplace = () => {
       minOrder: 25,
       image: "🍅",
       verified: true
+    },
+    // Additional suppliers with same materials for price comparison
+    {
+      id: 7,
+      name: "Premium Basmati Rice",
+      supplier: "Golden Grains",
+      price: 42,
+      unit: "kg",
+      rating: 4.6,
+      reviews: 189,
+      category: "grains",
+      location: "Haryana, India",
+      availability: "In Stock",
+      minOrder: 15,
+      image: "🌾",
+      verified: true
+    },
+    {
+      id: 8,
+      name: "Premium Basmati Rice",
+      supplier: "Rice Masters",
+      price: 48,
+      unit: "kg",
+      rating: 4.9,
+      reviews: 445,
+      category: "grains",
+      location: "Uttar Pradesh, India",
+      availability: "In Stock",
+      minOrder: 8,
+      image: "🌾",
+      verified: true
+    },
+    {
+      id: 9,
+      name: "Organic Turmeric Powder",
+      supplier: "Pure Spices Co",
+      price: 175,
+      unit: "kg",
+      rating: 4.7,
+      reviews: 234,
+      category: "spices",
+      location: "Tamil Nadu, India",
+      availability: "In Stock",
+      minOrder: 3,
+      image: "🟡",
+      verified: true
+    },
+    {
+      id: 10,
+      name: "Fresh Onions",
+      supplier: "Farm Direct",
+      price: 22,
+      unit: "kg",
+      rating: 4.7,
+      reviews: 167,
+      category: "vegetables",
+      location: "Rajasthan, India",
+      availability: "In Stock",
+      minOrder: 30,
+      image: "🧅",
+      verified: true
+    },
+    {
+      id: 11,
+      name: "Cooking Oil (Refined)",
+      supplier: "Golden Oil Mills",
+      price: 115,
+      unit: "liter",
+      rating: 4.5,
+      reviews: 189,
+      category: "oils",
+      location: "Andhra Pradesh, India",
+      availability: "In Stock",
+      minOrder: 20,
+      image: "🛢️",
+      verified: false
     }
   ];
 
@@ -132,6 +212,24 @@ const Marketplace = () => {
     const matchesCategory = selectedCategory === "all" || item.category === selectedCategory;
     return matchesSearch && matchesCategory;
   });
+
+  // Group items by name for price comparison
+  const groupedItems = filteredItems.reduce((acc, item) => {
+    const key = item.name;
+    if (!acc[key]) {
+      acc[key] = [];
+    }
+    acc[key].push(item);
+    return acc;
+  }, {} as Record<string, typeof filteredItems>);
+
+  // Sort comparison groups by price
+  const sortedGroups = Object.entries(groupedItems).map(([name, items]) => ({
+    name,
+    items: items.sort((a, b) => a.price - b.price),
+    lowestPrice: Math.min(...items.map(item => item.price)),
+    suppliers: items.length
+  })).sort((a, b) => a.lowestPrice - b.lowestPrice);
 
   const handleOrder = (item: any) => {
     toast({
@@ -191,81 +289,198 @@ const Marketplace = () => {
         </div>
 
         {/* Results count */}
-        <div className="mb-6">
+        <div className="mb-6 flex justify-between items-center">
           <p className="text-muted-foreground">
             Showing {filteredItems.length} results
           </p>
+          <p className="text-sm text-muted-foreground">
+            {sortedGroups.filter(group => group.suppliers > 1).length} materials available from multiple suppliers
+          </p>
         </div>
 
-        {/* Product Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredItems.map((item) => (
-            <Card key={item.id} className="border-2 hover:shadow-warm transition-smooth group">
-              <CardHeader>
-                <div className="flex justify-between items-start mb-4">
-                  <div className="text-4xl">{item.image}</div>
-                  <div className="flex items-center space-x-2">
-                    {item.verified && (
-                      <Badge variant="secondary" className="bg-accent/10 text-accent">
-                        <CheckCircle className="w-3 h-3 mr-1" />
-                        Verified
-                      </Badge>
-                    )}
-                    <Badge 
-                      variant={item.availability === "In Stock" ? "secondary" : "destructive"}
-                      className={item.availability === "In Stock" ? "bg-accent/20 text-accent" : ""}
-                    >
-                      {item.availability}
-                    </Badge>
-                  </div>
-                </div>
-                <CardTitle className="text-lg text-foreground">{item.name}</CardTitle>
-                <CardDescription className="flex items-center space-x-1">
-                  <span>{item.supplier}</span>
-                  <span>•</span>
-                  <MapPin className="w-3 h-3" />
-                  <span className="text-xs">{item.location}</span>
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  <div className="flex justify-between items-center">
-                    <div>
-                      <span className="text-2xl font-bold text-primary">₹{item.price}</span>
-                      <span className="text-muted-foreground">/{item.unit}</span>
-                    </div>
-                    <div className="flex items-center space-x-1">
-                      <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
-                      <span className="font-medium">{item.rating}</span>
-                      <span className="text-muted-foreground">({item.reviews})</span>
-                    </div>
-                  </div>
-                  
-                  <div className="flex items-center justify-between text-sm text-muted-foreground">
-                    <div className="flex items-center space-x-1">
-                      <Package className="w-4 h-4" />
-                      <span>Min: {item.minOrder} {item.unit}</span>
-                    </div>
-                    <div className="flex items-center space-x-1">
-                      <Truck className="w-4 h-4" />
-                      <span>2-3 days</span>
-                    </div>
-                  </div>
+        {/* Tabs for Grid and Comparison Views */}
+        <Tabs defaultValue="grid" className="space-y-6">
+          <TabsList className="grid w-full max-w-md grid-cols-2">
+            <TabsTrigger value="grid" className="flex items-center space-x-2">
+              <Grid3X3 className="w-4 h-4" />
+              <span>Grid View</span>
+            </TabsTrigger>
+            <TabsTrigger value="comparison" className="flex items-center space-x-2">
+              <BarChart3 className="w-4 h-4" />
+              <span>Price Comparison</span>
+            </TabsTrigger>
+          </TabsList>
 
-                  <Button 
-                    className="w-full" 
-                    variant="default"
-                    onClick={() => handleOrder(item)}
-                    disabled={item.availability !== "In Stock"}
-                  >
-                    <ShoppingCart className="w-4 h-4 mr-2" />
-                    {item.availability === "In Stock" ? "Order Now" : "Out of Stock"}
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
+          {/* Grid View */}
+          <TabsContent value="grid">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {filteredItems.map((item) => (
+                <Card key={item.id} className="border-2 hover:shadow-warm transition-smooth group">
+                  <CardHeader>
+                    <div className="flex justify-between items-start mb-4">
+                      <div className="text-4xl">{item.image}</div>
+                      <div className="flex items-center space-x-2">
+                        {item.verified && (
+                          <Badge variant="secondary" className="bg-accent/10 text-accent">
+                            <CheckCircle className="w-3 h-3 mr-1" />
+                            Verified
+                          </Badge>
+                        )}
+                        <Badge 
+                          variant={item.availability === "In Stock" ? "secondary" : "destructive"}
+                          className={item.availability === "In Stock" ? "bg-accent/20 text-accent" : ""}
+                        >
+                          {item.availability}
+                        </Badge>
+                      </div>
+                    </div>
+                    <CardTitle className="text-lg text-foreground">{item.name}</CardTitle>
+                    <CardDescription className="flex items-center space-x-1">
+                      <span>{item.supplier}</span>
+                      <span>•</span>
+                      <MapPin className="w-3 h-3" />
+                      <span className="text-xs">{item.location}</span>
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-4">
+                      <div className="flex justify-between items-center">
+                        <div>
+                          <span className="text-2xl font-bold text-primary">₹{item.price}</span>
+                          <span className="text-muted-foreground">/{item.unit}</span>
+                        </div>
+                        <div className="flex items-center space-x-1">
+                          <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
+                          <span className="font-medium">{item.rating}</span>
+                          <span className="text-muted-foreground">({item.reviews})</span>
+                        </div>
+                      </div>
+                      
+                      <div className="flex items-center justify-between text-sm text-muted-foreground">
+                        <div className="flex items-center space-x-1">
+                          <Package className="w-4 h-4" />
+                          <span>Min: {item.minOrder} {item.unit}</span>
+                        </div>
+                        <div className="flex items-center space-x-1">
+                          <Truck className="w-4 h-4" />
+                          <span>2-3 days</span>
+                        </div>
+                      </div>
+
+                      <Button 
+                        className="w-full" 
+                        variant="default"
+                        onClick={() => handleOrder(item)}
+                        disabled={item.availability !== "In Stock"}
+                      >
+                        <ShoppingCart className="w-4 h-4 mr-2" />
+                        {item.availability === "In Stock" ? "Order Now" : "Out of Stock"}
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </TabsContent>
+
+          {/* Price Comparison View */}
+          <TabsContent value="comparison">
+            <div className="space-y-6">
+              {sortedGroups.map((group) => (
+                <Card key={group.name} className="overflow-hidden">
+                  <CardHeader>
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center space-x-3">
+                        <span className="text-3xl">{group.items[0].image}</span>
+                        <div>
+                          <CardTitle className="text-xl">{group.name}</CardTitle>
+                          <CardDescription>
+                            {group.suppliers} supplier{group.suppliers > 1 ? 's' : ''} • Starting from ₹{group.lowestPrice}
+                          </CardDescription>
+                        </div>
+                      </div>
+                      {group.suppliers > 1 && (
+                        <Badge variant="secondary" className="bg-primary/10 text-primary">
+                          Compare Prices
+                        </Badge>
+                      )}
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Supplier</TableHead>
+                          <TableHead>Price</TableHead>
+                          <TableHead>Rating</TableHead>
+                          <TableHead>Min Order</TableHead>
+                          <TableHead>Location</TableHead>
+                          <TableHead>Status</TableHead>
+                          <TableHead>Action</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {group.items.map((item, index) => (
+                          <TableRow key={item.id} className={index === 0 ? "bg-accent/5" : ""}>
+                            <TableCell>
+                              <div className="flex items-center space-x-2">
+                                <span className="font-medium">{item.supplier}</span>
+                                {item.verified && (
+                                  <CheckCircle className="w-4 h-4 text-accent" />
+                                )}
+                                {index === 0 && (
+                                  <Badge variant="secondary" className="bg-green-100 text-green-800 text-xs">
+                                    Best Price
+                                  </Badge>
+                                )}
+                              </div>
+                            </TableCell>
+                            <TableCell>
+                              <span className="font-bold text-lg">₹{item.price}</span>
+                              <span className="text-muted-foreground text-sm">/{item.unit}</span>
+                            </TableCell>
+                            <TableCell>
+                              <div className="flex items-center space-x-1">
+                                <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
+                                <span>{item.rating}</span>
+                                <span className="text-muted-foreground text-sm">({item.reviews})</span>
+                              </div>
+                            </TableCell>
+                            <TableCell>{item.minOrder} {item.unit}</TableCell>
+                            <TableCell>
+                              <div className="flex items-center space-x-1">
+                                <MapPin className="w-3 h-3" />
+                                <span className="text-sm">{item.location}</span>
+                              </div>
+                            </TableCell>
+                            <TableCell>
+                              <Badge 
+                                variant={item.availability === "In Stock" ? "secondary" : "destructive"}
+                                className={item.availability === "In Stock" ? "bg-accent/20 text-accent" : ""}
+                              >
+                                {item.availability}
+                              </Badge>
+                            </TableCell>
+                            <TableCell>
+                              <Button 
+                                size="sm"
+                                onClick={() => handleOrder(item)}
+                                disabled={item.availability !== "In Stock"}
+                              >
+                                <ShoppingCart className="w-4 h-4 mr-1" />
+                                Order
+                              </Button>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </TabsContent>
+        </Tabs>
 
         {/* Empty state */}
         {filteredItems.length === 0 && (
